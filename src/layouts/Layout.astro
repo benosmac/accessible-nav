@@ -1,0 +1,99 @@
+---
+import Nav from "@components/Nav.astro";
+import ViewTransitions from "astro/components/ViewTransitions.astro";
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+
+const sample = [
+  { title: "Home", href: "/" },
+  { title: "Contact", href: "/contact" },
+  {
+    title: "Products",
+    href: "#products",
+    children: [
+      { title: "Hats", href: "/products/hats" },
+      { title: "Shoes", href: "/products/shoes" },
+      {
+        title: "T-shirts",
+        href: "#t-shirts",
+        children: [
+          { title: "Plain", href: "/products/t-shirts/plain" },
+          { title: "Printed", href: "/products/t-shirts/printed" },
+          {
+            title: "Novelty",
+            href: "#novelty",
+            children: [
+              { title: "Hats", href: "/products/hats" },
+              { title: "Shoes", href: "/products/shoes" },
+              { title: "T-shirts", href: "/products/t-shirts" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "FAQ",
+    href: "#faq",
+    children: [
+      { title: "Shipping", href: "/faq/shipping" },
+      { title: "Warranty", href: "/faq/shipping" },
+    ],
+  },
+  { title: "Account", href: "/account" },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Astro description" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <ViewTransitions />
+  <body>
+    <header>
+      <Nav items={sample} />
+    </header>
+    <slot />
+  </body>
+
+  <style is:global>
+    :root {
+      --accent: 136, 58, 234;
+      --accent-light: 224, 204, 250;
+      --accent-dark: 49, 10, 101;
+      --accent-gradient: linear-gradient(
+        45deg,
+        rgb(var(--accent)),
+        rgb(var(--accent-light)) 30%,
+        white 60%
+      );
+    }
+    html {
+      font-family: system-ui, sans-serif;
+      background: #13151a;
+      background-size: 224px;
+    }
+    code {
+      font-family:
+        Menlo,
+        Monaco,
+        Lucida Console,
+        Liberation Mono,
+        DejaVu Sans Mono,
+        Bitstream Vera Sans Mono,
+        Courier New,
+        monospace;
+    }
+  </style>
+
+
+</html>

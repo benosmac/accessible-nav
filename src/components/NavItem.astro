@@ -1,0 +1,75 @@
+---
+export interface SubmenuItem {
+  title: string;
+  href: string;
+  children?: Array<SubmenuItem>;
+  index?: number;
+}
+interface Props {
+  title: string;
+  href: string;
+  children?: Array<SubmenuItem>;
+  index?: number;
+}
+
+const { title, href, children, index } = Astro.props;
+const current = Astro.url.pathname == href;
+// let currentLevel = level ? level : 1;
+// children && currentLevel++;
+---
+
+<li class="nav-list--item">
+  <a
+    href={href}
+    title={title}
+    aria-current={current}
+    data-subnav={children && true}
+    data-astro-reload={children && true}
+    style={index ? `--index: ${index}` : ""}
+    ;
+  >
+    {title}
+    {
+      children && (
+        <span class="icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="16px"
+            viewBox="0 -960 960 960"
+            width="16px"
+            fill="#e8eaed"
+          >
+            <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
+          </svg>
+        </span>
+      )
+    }
+  </a>
+  {
+    children && (
+      <div class="subnav nav-level">
+        <span class="subnav-title">{title}</span>
+        {/* <button>Back</button> */}
+        <ul class="nav-list" data-parent={title}>
+          {children &&
+            children.map((child, index) => (
+              <Astro.self
+                title={child.title}
+                href={child.href}
+                children={child.children}
+                index={index}
+              />
+            ))}
+        </ul>
+      </div>
+    )
+  }
+</li>
+
+<script></script>
+<style>
+  .subnav-title {
+    position: absolute;
+    inset: -1rem 0 auto auto;
+  }
+</style>
