@@ -1,0 +1,196 @@
+:root {
+  --lh: 1.6;
+  --hlh: 1.2;
+  --gap: 1rlh;
+  --hgap: calc(var(--gap) / 2);
+
+  --black: #121212;
+  --darkGrey: #555;
+  --lightGrey: #eee;
+  --white: #fefefe;
+
+  --brand: hsl(205, 76%, 45%);
+
+  --secondary: oklch(from var(--brand) l c calc(h + 60));
+
+  --secondaryTint: color-mix(in oklch, var(--secondary), #fff 50%);
+  --secondaryShade: color-mix(in oklch, var(--secondary), #000 50%);
+  --secondaryShadeMuted: oklch(from var(--secondaryShade) l 0.05 h);
+  --secondaryTintMuted: oklch(from var(--secondaryTint) l 0.025 h);
+  --bgLight: color-mix(in oklch, var(--secondaryTintMuted), #fff 25%);
+  --bgDark: color-mix(in oklch, var(--secondaryShadeMuted), #000 25%);
+
+  --base: light-dark(var(--black), var(--white));
+  --bg: light-dark(var(--bgLight), var(--bgDark));
+  --surface: light-dark(var(--secondaryTint), var(--secondaryShade));
+  --surface2: light-dark(var(--secondaryTintMuted), var(--secondaryShadeMuted));
+
+  --hightlight: light-dark(
+    oklch(from var(--brand) 0.25 c h),
+    oklch(from var(--brand) 0.75 c h)
+  );
+
+  --border: 1px solid var(--hightlight);
+}
+html {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  line-height: var(--lh);
+  color: var(--base);
+  background-color: var(--bg);
+  color-scheme: light dark;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+  line-height: var(--hlh);
+}
+a {
+  color: var(--hightlight);
+}
+
+// Hide nav controls by default
+#nav-toggle-close,
+#nav-toggle-open {
+  display: none;
+}
+
+#nav-toggle-close,
+#nav-toggle-open {
+  display: flex;
+}
+#back,
+#nav-toggle-open {
+  background: none;
+  border: none;
+  padding: 0;
+}
+[inert] {
+  filter: grayscale(1) brightness(0.5);
+  transition: all 0.1s ease-in 0s;
+  z-index: 1;
+}
+
+#nav-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: fixed;
+  width: 100%;
+  min-height: 100vh;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  transform: translateX(66vw);
+  transition: transform 0.125s ease-out, visibility 0s linear 0.125s;
+  will-change: transform;
+  visibility: hidden;
+  z-index: 50;
+  &:has(> #nav[aria-expanded="true"]) {
+    transform: translateX(0px);
+    transition: transform 0.125s ease-in;
+    visibility: visible;
+  }
+}
+nav {
+  background-color: var(--surface2);
+  /* padding: 1rem; */
+  overflow: clip;
+}
+.nav-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.nav-list__item {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  border-block-end: var(--border);
+
+  a {
+    flex-grow: 1;
+    text-decoration: none;
+    padding: var(--hgap);
+  }
+}
+
+#nav:has(a[aria-selected="true"]) {
+  .top-level {
+    visibility: hidden;
+  }
+
+  #back {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+.nav-list:has(a[aria-selected="true"]) {
+  > li > a {
+    transform: translateX(-4rem);
+  }
+}
+#back {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
+.details {
+  display: flex;
+  border-bottom: var(--border);
+  padding: var(--hgap);
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-list.top-level {
+  position: relative;
+  > li > a {
+    transform: translateX(0px);
+    opacity: 1;
+  }
+}
+
+.nav-list {
+  > li > a {
+    transform: translateX(4rem);
+    opacity: 0;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    transition-delay: calc(0.05s * var(--index));
+  }
+  &[aria-expanded="true"] {
+    > li > a {
+      transform: translateX(0px);
+      opacity: 1;
+    }
+  }
+}
+.gradiated .nav-list > li > a {
+  background-color: light-dark(
+    oklch(
+      from var(--secondaryTintMuted)
+        calc(l + calc(var(--index) * 0.025 + 0.025)) c h
+    ),
+    oklch(
+      from var(--secondaryShadeMuted)
+        calc(l - calc(var(--index) * 0.025 - 0.025)) c h
+    )
+  );
+}
+.subnav {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+}
+.subnav__title {
+  min-height: var(--gap);
+}
+
+[aria-selected="true"] + .subnav {
+  visibility: visible;
+
+  > .nav-list {
+    transform: translateX(0px);
+  }
+}

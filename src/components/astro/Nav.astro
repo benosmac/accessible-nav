@@ -1,7 +1,6 @@
 ---
 import type { ComponentProps } from "astro/types";
-import NavItem from "@components/NavItem.astro";
-import type { SubmenuItem } from "@components/NavItem.astro";
+import NavItem from "@components/astro/NavItem.astro";
 type NavItem = ComponentProps<typeof NavItem>;
 
 interface Props {
@@ -10,18 +9,18 @@ interface Props {
 const { items } = Astro.props;
 
 // A recursive function to get the deepest nested navigation level
-function getNavDepth(itemsArray: Array<NavItem>): number {
-  // Construct new array from children of current items
-  let childItems: Array<any> = itemsArray
-    .filter((item) => (item.children ? true : false))
-    .map((item) => item.children);
-  // keep going til we hit the bottom
-  return Array.isArray(childItems)
-    ? 1 + Math.max(0, ...childItems.map(getNavDepth))
-    : 0;
-}
-// store the value so we can use define:vars to access the value in our CSS
-const navDepth = getNavDepth(items);
+// function getNavDepth(itemsArray: Array<NavItem>): number {
+//   // Construct new array from children of current items
+//   let childItems: Array<any> = itemsArray
+//     .filter((item) => (item.children ? true : false))
+//     .map((item) => item.children);
+//   // keep going til we hit the bottom
+//   return Array.isArray(childItems)
+//     ? 1 + Math.max(0, ...childItems.map(getNavDepth))
+//     : 0;
+// }
+// // store the value so we can use define:vars to access the value in our CSS
+// const navDepth = getNavDepth(items);
 ---
 
 <button
@@ -49,7 +48,7 @@ const navDepth = getNavDepth(items);
     <button id="back">Back</button>
     <ul class="nav-list nav-level" transition:name="nav-1">
       {
-        items.map((item, index) => (
+        items.map((item) => (
           <NavItem
             title={item.title}
             href={item.href}
@@ -62,27 +61,22 @@ const navDepth = getNavDepth(items);
 </div>
 
 <script>
-  if (!document.startViewTransition) {
-    //  If view transitions not supported, set up nav related event listeners on DOMContentLoaded
-    document.addEventListener("DOMContentLoaded", () =>
-      setupNavEventHandlers()
-    );
-  } else {
-    //  If view transitions supported, set up nav related event listeners on astro:page-load
-    document.addEventListener("astro:page-load", (event) => {
-      setupNavEventHandlers();
-    });
-  }
+  document.addEventListener("astro:page-load", (event) => {
+    setupNavEventHandlers();
+  });
 
   function setupNavEventHandlers() {
     const navContainer = document.querySelector<HTMLElement>("#nav-container");
     const nav = navContainer?.querySelector("#nav");
-    const notNav = document.querySelectorAll("main");
     const navOpen = document.querySelector<HTMLLinkElement>("#nav-toggle-open");
     const navClose =
       document.querySelector<HTMLLinkElement>("#nav-toggle-close");
-    const navItemsWithChildren = document.querySelectorAll("[data-subnav]");
+    const navItemsWithChildren: NodeListOf<HTMLAnchorElement> =
+      document.querySelectorAll("[data-subnav]");
     const backButton = document.querySelector("#back");
+
+    // Add any elements that should be inert when nav is open
+    const notNav = document.querySelectorAll("main");
 
     backButton?.addEventListener("click", closeCurrentSubNav);
 
@@ -110,8 +104,8 @@ const navDepth = getNavDepth(items);
         openSubNav(item);
       });
     });
-    // Opens the subnav by applying appropriate aria state labels (which are used to style the open/closed states)
-    function openSubNav(el: Element) {
+    // Opens the subnav for given <a> by setting aria state labels
+    function openSubNav(el: HTMLAnchorElement) {
       const subnav = el.parentElement?.querySelector("[data-parent]");
       const prevItem = nav?.querySelector('[aria-selected="true"]');
       prevItem?.removeAttribute("aria-selected");
@@ -144,27 +138,6 @@ const navDepth = getNavDepth(items);
       currentEl instanceof HTMLAnchorElement && currentEl.focus();
     }
 
-    // Closes the subnav by resetting aria state labels
-    // function closeSubNav(el: Element) {
-    //   const currentEl = document.querySelectorAll(
-    //     "[data-subnav][aria-selected='true']"
-    //   );
-
-    //   const subnav = el.parentElement?.querySelector("[data-parent]");
-    //   const parentTitle =
-    //     el.closest<HTMLElement>("[data-parent]")?.dataset.parent;
-    //   const parentNavItem = nav?.querySelector(`[title=${parentTitle}]`);
-
-    //   // reset aria attributes on item and subnav
-    //   el.setAttribute("aria-selected", "false");
-    //   subnav?.setAttribute("aria-expanded", "false");
-    //   // If the item is in a nested subnav, re-select the parent nav item
-    //   parentNavItem && parentNavItem.setAttribute("aria-selected", "true");
-    //   // focus the closed element so it can be reopened easily
-    //   // depending on the structure of your menu, it may make sense to focus a different element.
-    //   el instanceof HTMLAnchorElement && el.focus();
-    // }
-
     function toggleNav(event: Event) {
       event.preventDefault;
       const isNavOpen = nav?.ariaExpanded;
@@ -189,7 +162,7 @@ const navDepth = getNavDepth(items);
     }
   }
 </script>
-<style is:global define:vars={{ navDepth }}>
+<style is:global define:vars={{}}>
   #nav-toggle-close,
   #nav-toggle-open {
     display: none;
