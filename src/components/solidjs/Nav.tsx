@@ -145,15 +145,18 @@ function NavItem(item: NavItem) {
             aria-expanded={selectedItem() == uniqueID}
           >
             {/* Component renders itself, allowing infinite nesting of subnavs */}
-            {item.children &&
-              item.children.map((child, index) => (
-                <NavItem
-                  title={child.title}
-                  href={child.href}
-                  children={child.children}
-                  index={index}
-                />
-              ))}
+            {item.children && (
+              <Index each={item.children}>
+                {(child, index) => (
+                  <NavItem
+                    title={child().title}
+                    href={child().href}
+                    children={child().children}
+                    index={index}
+                  />
+                )}
+              </Index>
+            )}
           </ul>
         </div>
       )}
