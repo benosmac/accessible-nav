@@ -1,11 +1,12 @@
 ---
 import { SolidNav } from "@components/solidjs/Nav";
-import { navitems } from "@components/data/navitems.ts";
+import { headerData } from "@components/data/navitems.ts";
 interface Props {
   title: string;
 }
 
 const { title } = Astro.props;
+const navitems = headerData.links;
 ---
 
 <!doctype html>

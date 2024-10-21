@@ -7,6 +7,7 @@ import {
   type JSX,
 } from "solid-js";
 import "../solidjs/Nav.css";
+import { createMediaQuery } from "@solid-primitives/media";
 
 interface NavItem {
   title: string;
@@ -26,17 +27,22 @@ const [currentPageItem, setCurrentPageItem] = createSignal("");
 const [selectedItem, setSelectedItem] = createSignal("nav");
 
 const [currentSubnavTitle, setCurrentSubnavTitle] = createSignal("");
+
+const isSmall = createMediaQuery("(max-width: 800px)");
 // Create refs for open/close controls (will be assigned after initial render)
 let closeNav: HTMLAnchorElement;
 let openNav: HTMLButtonElement;
-
+let closeSubNav: HTMLAnchorElement;
 // Nav container
 export function SolidNav(navitems: NavItems) {
-  // Creates a tracking scope for signals used within, then reruns when they update
+  // Select any elements to make [inert] when nav is open
+
+  // createEffect creates a tracking scope for signals used within, then reruns when they update
+
+  // Handle navExpanded changed
   createEffect(() => {
-    if (!closeNav || !openNav) return;
-    // Select any elements to make [inert] when nav is open
     const main = document.getElementById("main");
+    if (!closeNav || !openNav) return;
     if (navExpanded()) {
       // focus the close button after nav is expanded
       closeNav.focus();
@@ -49,12 +55,31 @@ export function SolidNav(navitems: NavItems) {
       main?.removeAttribute("inert");
     }
   });
+  // Remove inert if viewport enlarged with nav open
+  createEffect(() => {
+    const main = document.getElementById("main");
+    if (!isSmall()) {
+      main?.removeAttribute("inert");
+    }
+  });
+  // Focus first child link when subnav selected
+  createEffect(() => {
+    const subnavTarget: HTMLElement | null = document.querySelector(
+      `[data-parent="${selectedItem()}"] li:first-child > a`
+    );
+    subnavTarget?.focus();
+    console.log(subnavTarget);
+  });
 
   return (
     <>
       <NavToggleButton />
-      <div id="nav-container">
-        <NavClosePanel />
+      <div
+        id="nav-container"
+        onkeydown={handleKeyDown}
+        aria-hidden={!navExpanded() && isSmall()}
+      >
+        {isSmall() ? <NavClosePanel /> : <SubNavClosePanel />}
         <Nav items={navitems.items} />
       </div>
     </>
@@ -74,12 +99,16 @@ function Nav(props: NavItems) {
     setCurrentPageItem(window.location.href);
   });
   return (
-    <nav id="nav" aria-expanded={navExpanded()} aria-hidden={!navExpanded()}>
+    <nav id="nav">
       <span class="details">
         <BackButton />
         <span class="subnav__title">{currentSubnavTitle()}</span>
       </span>
-      <ul class="nav-list top-level" data-parent="nav">
+      <ul
+        class="nav-list top-level"
+        data-parent="nav"
+        // onFocusOut={() => !isSmall() && setSelectedItem("")}
+      >
         <Index each={props.items}>
           {(item, index) => (
             <NavItem
@@ -122,28 +151,46 @@ function BackButton() {
 function NavItem(item: NavItem) {
   // assign each item a unique id so we can track the selected item
   let uniqueID = createUniqueId();
+  const anchor = () => {
+    let result = null;
+    if (item.children) {
+      result = (
+        <a
+          href={item.href}
+          title={item.title}
+          id={uniqueID}
+          aria-current={currentPageItem() == item.href && "page"}
+          style={`--index: ${item.index}`}
+          onClick={openSubnav}
+          aria-expanded={selectedItem() == uniqueID}
+          aria-controls={`subnav-${uniqueID}`}
+        >
+          {item.title} <span class="icon"> &#62;</span>
+        </a>
+      );
+    } else {
+      result = (
+        <a
+          href={item.href}
+          title={item.title}
+          id={uniqueID}
+          aria-current={currentPageItem() == item.href && "page"}
+          style={`--index: ${item.index}`}
+        >
+          {item.title}
+        </a>
+      );
+    }
+    return result;
+  };
+
   return (
-    <li class="nav-list__item">
-      <a
-        href={item.href}
-        title={item.title}
-        id={uniqueID}
-        aria-current={currentPageItem() == item.href && "page"}
-        aria-selected={uniqueID == selectedItem()}
-        style={`--index: ${item.index}`}
-        onClick={item.children && openSubnav}
-      >
-        {item.title}
-        {item.children && <span class="icon">...</span>}
-      </a>
+    <li class="nav-list__item" aria-selected={uniqueID == selectedItem()}>
+      {anchor()}
       {/* Render subnav for items with children */}
       {item.children && (
-        <div class="subnav">
-          <ul
-            class="nav-list"
-            data-parent={uniqueID}
-            aria-expanded={selectedItem() == uniqueID}
-          >
+        <div class="subnav" id={`subnav-${uniqueID}`}>
+          <ul class="nav-list" data-parent={uniqueID}>
             {/* Component renders itself, allowing infinite nesting of subnavs */}
             {item.children && (
               <Index each={item.children}>
@@ -174,6 +221,7 @@ function NavToggleButton() {
       aria-label="Open Menu"
       aria-controls="nav"
       aria-haspopup="true"
+      aria-expanded={navExpanded()}
       onClick={() => setNavExpanded(true)}
     >
       <svg
@@ -198,7 +246,8 @@ function NavToggleButton() {
     </button>
   );
 }
-// Overlay panel for the remainder of the page, so clicking outside the nav closes it
+// Overlay panel for the remainder of the page, so clicking outside the nav collapses it
+//Only for small screens
 function NavClosePanel() {
   return (
     <a
@@ -213,10 +262,28 @@ function NavClosePanel() {
   );
 }
 
+// Overlay panel for the remainder of the page, clicking it closes subnav
+//Only for big screens
+function SubNavClosePanel() {
+  return (
+    <a
+      href="#"
+      id="subnav-toggle-close"
+      ref={closeSubNav}
+      title="Close Sub Menu"
+      aria-label="Close Sub Menu"
+      aria-controls="nav"
+      onClick={() => setSelectedItem("")}
+    ></a>
+  );
+}
+
 // Set selected item when subnav opened
 const openSubnav: JSX.EventHandler<HTMLAnchorElement, MouseEvent> = (event) => {
   const currentID = event.currentTarget.id;
-  currentID && setSelectedItem(currentID);
+  currentID && currentID === selectedItem()
+    ? handleBackButton()
+    : setSelectedItem(currentID);
 };
 
 // Dirty things :/
@@ -228,4 +295,14 @@ function handleBackButton() {
     currentItem?.closest<HTMLElement>("[data-parent]")?.dataset.parent;
   // set selected item to parent item id
   prevItem && setSelectedItem(prevItem);
+}
+
+// Keyboard controls
+function handleKeyDown(event: KeyboardEvent) {
+  if (event.key === "Escape") {
+    setSelectedItem("");
+    if (isSmall()) {
+      setNavExpanded(false);
+    }
+  }
 }
