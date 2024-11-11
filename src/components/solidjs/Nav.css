@@ -124,8 +124,9 @@ body {
   list-style: none;
   padding: 0;
   a {
+    font-size: 1.25rem;
     flex-grow: 1;
-    padding: var(--hgap) var(--gap);
+    padding: var(--gap) var(--gap);
   }
 }
 
@@ -136,7 +137,10 @@ body {
   #nav-toggle-open {
     background: none;
     border: none;
-    padding: 0;
+    padding: var(--gap);
+    position: absolute;
+    right: 0;
+    z-index: 60;
   }
 
   #nav-toggle-open,
@@ -145,18 +149,18 @@ body {
   }
 
   #nav-container {
+    visibility: hidden;
+    position: fixed;
+    inset: 0;
     display: grid;
     grid-template-columns: minmax(3rem, 8rem) 1fr;
-    position: fixed;
     width: 100%;
     min-height: 100vh;
-    inset-block-start: 0;
-    inset-inline-end: 0;
     transform: translateX(100vw);
     transition: transform 0.125s ease-out, visibility 0s linear 0.125s;
     will-change: transform;
-    visibility: hidden;
     z-index: 50;
+    overflow-y: scroll;
   }
   #nav-toggle-open[aria-expanded="true"] + #nav-container {
     transform: translateX(0px);
@@ -165,12 +169,13 @@ body {
   }
   nav {
     background-color: var(--surface2);
-    padding-block-start: var(--gap);
+    padding-block: var(--gap);
     overflow-x: clip;
-    overflow-y: scroll;
+    display: flex;
   }
   .subnav {
     visibility: hidden;
+    overflow: clip;
     background-color: light-dark(
       oklch(from var(--white) l c h / 0.25),
       oklch(from var(--black) l c h / 0.25)
@@ -189,15 +194,19 @@ body {
       opacity: 0;
       transition: transform 0.125s ease, opacity 0.125s ease;
       transition-delay: calc((0.0333s * var(--index)) + 0.125s);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.05);
 
       &[aria-expanded="true"] + .subnav > .nav-list > li > a {
         transform: translateX(0px);
         opacity: 1;
       }
     }
-    &.top-level > li > a {
-      transform: translateX(0px);
-      opacity: 1;
+    &.top-level {
+      align-self: center;
+      > li > a {
+        transform: translateX(0px);
+        opacity: 1;
+      }
     }
   }
 
