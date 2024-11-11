@@ -48,38 +48,42 @@ export const headerData = {
         {
           title: "Featured",
           href: getPermalink("#"),
-        },
-        {
-          title: "Online Induction System",
-          href: getPermalink("/products/online-induction"),
-        },
-        {
-          title: "Contractor Management System",
-          href: getPermalink("/products/contractor-management"),
-        },
-        {
-          title: "Check-in System",
-          href: getPermalink("/products/check-in-system"),
+          children: [
+            {
+              title: "Online Induction System",
+              href: getPermalink("/products/online-induction"),
+            },
+            {
+              title: "Contractor Management System",
+              href: getPermalink("/products/contractor-management"),
+            },
+            {
+              title: "Check-in System",
+              href: getPermalink("/products/check-in-system"),
+            },
+          ],
         },
         {
           title: "Platform",
           href: getPermalink("#"),
-        },
-        {
-          title: "Integrations",
-          href: getPermalink("/platform/integrations"),
-        },
-        {
-          title: "SCORM",
-          href: getPermalink("/platform/scorm-with-altora"),
-        },
-        {
-          title: "Trust & Security",
-          href: getPermalink("/platform/trust"),
-        },
-        {
-          title: "Services",
-          href: getPermalink("/platform/services"),
+          children: [
+            {
+              title: "Integrations",
+              href: getPermalink("/platform/integrations"),
+            },
+            {
+              title: "SCORM",
+              href: getPermalink("/platform/scorm-with-altora"),
+            },
+            {
+              title: "Trust & Security",
+              href: getPermalink("/platform/trust"),
+            },
+            {
+              title: "Services",
+              href: getPermalink("/platform/services"),
+            },
+          ],
         },
       ],
     },

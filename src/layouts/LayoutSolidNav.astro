@@ -23,6 +23,8 @@ const navitems = headerData.links;
     <header>
       <SolidNav items={navitems} client:load />
     </header>
-    <slot />
+    <main id="main">
+      <slot />
+    </main>
   </body>
 </html>
